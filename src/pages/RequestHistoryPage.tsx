@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRequests, HealthRequest } from '@/contexts/RequestContext';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ import {
   Plus,
   List
 } from 'lucide-react';
+import { getAllRequests, HealthBenefitRequest } from '@/lib/supabase';
 
 const getStatusIcon = (status: HealthRequest['status']) => {
   switch (status) {
@@ -67,8 +69,47 @@ const getContactMethodIcon = (method: HealthRequest['contactMethod']) => {
 const RequestHistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const { requests, updateRequestStatus } = useRequests();
   const { toast } = useToast();
+
+  const [requests, setRequests] = React.useState<HealthRequest[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [page, setPage] = React.useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(requests.length / itemsPerPage);
+  const paginatedRequests = requests.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  // Fetch all requests from Supabase on mount
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    getAllRequests()
+      .then((data: HealthBenefitRequest[] = []) => {
+        // Map Supabase data to HealthRequest[]
+        const mapped = data.map((item) => ({
+          id: item.id || Math.random().toString(),
+          service: item.service,
+          details: item.description || `Request for ${item.service}`,
+          contactMethod: item.contact_method as 'phone' | 'email' | 'video',
+          additionalRequirements: '',
+          needsAccessibilityAssistance: false, // Not tracked in DB
+          status: (item.status as HealthRequest['status']) || 'pending',
+          createdAt: item.created_at ? new Date(item.created_at) : new Date(),
+          updatedAt: item.updated_at ? new Date(item.updated_at) : (item.created_at ? new Date(item.created_at) : new Date()),
+          fullName: item.full_name,
+          email: item.email,
+          phoneNumber: item.phone_number,
+        }));
+        setRequests(mapped);
+      })
+      .catch((error) => {
+        toast({
+          title: 'Error loading requests',
+          description: 'Could not fetch requests from the server.',
+          variant: 'destructive',
+        });
+      })
+      .finally(() => setLoading(false));
+  }, [isAuthenticated, toast]);
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -210,7 +251,9 @@ const RequestHistoryPage: React.FC = () => {
         </div>
 
         {/* Request List */}
-        {requests.length === 0 ? (
+        {loading ? (
+          <Card><CardContent className="text-center py-12">Loading requests...</CardContent></Card>
+        ) : requests.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -229,105 +272,152 @@ const RequestHistoryPage: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
-            {requests.map((request) => (
-              <Card key={request.id} className="hover:shadow-md transition-shadow duration-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center text-lg">
-                      {getStatusIcon(request.status)}
-                      <span className="ml-2">{request.service}</span>
-                    </CardTitle>
-                    <Badge 
-                      className={`${getStatusColor(request.status)} transition-colors focus:outline-none`}
-                      tabIndex={0}
-                      role="status"
-                      aria-label={`Request status: ${request.status === 'in-progress' ? 'In Progress - Your request is currently being reviewed and processed' : request.status === 'completed' ? 'Completed - Your request has been successfully fulfilled' : request.status === 'cancelled' ? 'Cancelled - This request has been cancelled' : 'Pending - Your request is waiting to be processed'}`}
-                    >
-                      {request.status.replace('-', ' ').toUpperCase()}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Request Details */}
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-1">Request Details</h4>
-                      <p className="text-gray-600 text-sm">
-                        {request.details || `Request for ${request.service}`}
-                      </p>
+          <>
+            <div className="space-y-6">
+              {paginatedRequests.map((request, idx) => (
+                <Card key={request.id} className="hover:shadow-md transition-shadow duration-200">
+                  <CardHeader>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(request.status)}
+                        <span className="ml-2 text-lg font-semibold">{request.service}</span>
+                      </div>
+                      <Badge 
+                        className={`${getStatusColor(request.status)} transition-colors focus:outline-none`}
+                        tabIndex={0}
+                        role="status"
+                        aria-label={`Request status: ${request.status === 'in-progress' ? 'In Progress - Your request is currently being reviewed and processed' : request.status === 'completed' ? 'Completed - Your request has been successfully fulfilled' : request.status === 'cancelled' ? 'Cancelled - This request has been cancelled' : 'Pending - Your request is waiting to be processed'}`}
+                      >
+                        {request.status.replace('-', ' ').toUpperCase()}
+                      </Badge>
                     </div>
+                    {/* User Info Row */}
+                    <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-700">
+                      <div><span className="font-medium">Name:</span> {request.fullName || 'N/A'}</div>
+                      <div><span className="font-medium">Email:</span> {request.email || 'N/A'}</div>
+                      <div><span className="font-medium">Phone:</span> {request.phoneNumber || 'N/A'}</div>
+                      <div><span className="font-medium">Service:</span> {request.service}</div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Collapsible Description */}
+                      <Accordion type="single" collapsible defaultValue={undefined}>
+                        <AccordionItem value={`desc-${(page - 1) * itemsPerPage + idx}`}>
+                          <AccordionTrigger className="text-base font-medium">
+                            Request Details
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <p className="text-gray-600 text-sm whitespace-pre-line">
+                              {request.details || `Request for ${request.service}`}
+                            </p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
 
-                    {/* Additional Requirements */}
-                    {request.additionalRequirements && (
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-1">Additional Requirements</h4>
-                        <p className="text-gray-600 text-sm">
-                          {request.additionalRequirements}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Request Metadata */}
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                      <div className="flex items-center">
-                        {getContactMethodIcon(request.contactMethod)}
-                        <span className="ml-1">
-                          Contact via {request.contactMethod}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" aria-hidden="true" />
-                        <span>
-                          Submitted {request.createdAt.toLocaleDateString()}
-                        </span>
-                      </div>
-                      
-                      {request.updatedAt.getTime() !== request.createdAt.getTime() && (
-                        <div className="flex items-center">
-                          <CheckCircle className="h-4 w-4 mr-1" aria-hidden="true" />
-                          <span>
-                            Updated {request.updatedAt.toLocaleDateString()}
-                          </span>
+                      {/* Additional Requirements */}
+                      {request.additionalRequirements && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-1">Additional Requirements</h4>
+                          <p className="text-gray-600 text-sm">
+                            {request.additionalRequirements}
+                          </p>
                         </div>
                       )}
-                    </div>
 
-                    {/* Accessibility Badge */}
-                    {request.needsAccessibilityAssistance && (
-                      <Badge variant="outline" className="w-fit">
-                        Accessibility assistance requested
-                      </Badge>
-                    )}
+                      {/* Request Metadata */}
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <div className="flex items-center">
+                          {getContactMethodIcon(request.contactMethod)}
+                          <span className="ml-1">
+                            Contact via {request.contactMethod}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" aria-hidden="true" />
+                          <span>
+                            Submitted {request.createdAt.toLocaleDateString()}
+                          </span>
+                        </div>
+                        {request.updatedAt.getTime() !== request.createdAt.getTime() && (
+                          <div className="flex items-center">
+                            <CheckCircle className="h-4 w-4 mr-1" aria-hidden="true" />
+                            <span>
+                              Updated {request.updatedAt.toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewDetails(request)}
-                        aria-label={`View details for ${request.service} request`}
-                      >
-                        View Details
-                      </Button>
-                      
-                      {(request.status === 'pending' || request.status === 'in-progress') && (
+                      {/* Accessibility Badge */}
+                      {request.needsAccessibilityAssistance && (
+                        <Badge variant="outline" className="w-fit">
+                          Accessibility assistance requested
+                        </Badge>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-2 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleFollowUp(request.id)}
-                          aria-label={`Request follow-up for ${request.service}`}
+                          onClick={() => handleViewDetails(request)}
+                          aria-label={`View details for ${request.service} request`}
                         >
-                          Request Follow-Up
+                          View Details
                         </Button>
-                      )}
+                        {(request.status === 'pending' || request.status === 'in-progress') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleFollowUp(request.id)}
+                            aria-label={`Request follow-up for ${request.service}`}
+                          >
+                            Request Follow-Up
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <nav className="flex justify-center items-center gap-2 mt-8" role="navigation" aria-label="Pagination">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  aria-label="Previous page"
+                >
+                  Previous
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <Button
+                    key={i + 1}
+                    variant={page === i + 1 ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPage(i + 1)}
+                    aria-current={page === i + 1 ? 'page' : undefined}
+                    aria-label={`Go to page ${i + 1}`}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  aria-label="Next page"
+                >
+                  Next
+                </Button>
+              </nav>
+            )}
+          </>
         )}
 
         {/* Support Information */}

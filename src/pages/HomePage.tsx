@@ -241,7 +241,7 @@ const HomePage: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Welcome to The Wellness Corner 22
+            Welcome to The Wellness Corner
           </h1>
           <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
             Access your corporate health and wellness benefits with ease. Our platform provides specially-abled individuals 

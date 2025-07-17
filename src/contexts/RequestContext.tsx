@@ -11,6 +11,9 @@ export interface HealthRequest {
   status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
   isGuestSubmission?: boolean;
   guestInfo?: {
     fullName: string;
