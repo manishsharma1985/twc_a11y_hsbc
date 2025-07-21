@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Check, Home, Activity } from 'lucide-react';
+import Header from '@/components/Header';
 
 const SuccessPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,39 +24,10 @@ const SuccessPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/81eef39a-e573-4fd1-9023-d796f35d9e41.png" 
-                alt="The Wellness Corner"
-                className="h-10 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => navigate('/')}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/');
-                  }
-                }}
-              />
-            </div>
-            
-            <nav className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {user?.name}
-              </span>
-              <Link to="/">
-                <Button variant="outline">Home</Button>
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
+      <Header
+        user={user}
+        isAuthenticated={isAuthenticated}
+      />
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">

@@ -33,19 +33,35 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = sessionStorage.getItem('authUser');
+    if (stored) {
+      try {
+        const { user, expiry } = JSON.parse(stored);
+        if (user && expiry && Date.now() < expiry) {
+          return user;
+        }
+      } catch {}
+    }
+    return null;
+  });
 
   const login = async (email: string, password: string): Promise<boolean> => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     // Only allow login with hardcoded credentials
     if (email === 'hsbctest@truworth.com' && password === 'test@123') {
-      setUser({
+      const userObj = {
         id: '1',
         name: 'HSBC User',
         email: email,
         phone: '+1234567890'
-      });
+      };
+      setUser(userObj);
+      sessionStorage.setItem('authUser', JSON.stringify({
+        user: userObj,
+        expiry: Date.now() + 3 * 60 * 60 * 1000 // 3 hours
+      }));
       return true;
     }
     // Invalid credentials
@@ -57,17 +73,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Mock successful registration
-    setUser({
+    const userObj = {
       id: '1',
       name: data.name,
       email: data.email,
       phone: data.phone
-    });
+    };
+    setUser(userObj);
+    sessionStorage.setItem('authUser', JSON.stringify({
+      user: userObj,
+      expiry: Date.now() + 3 * 60 * 60 * 1000 // 3 hours
+    }));
     return true;
   };
 
   const logout = () => {
     setUser(null);
+    sessionStorage.removeItem('authUser');
   };
 
   const value = {

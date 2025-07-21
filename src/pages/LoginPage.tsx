@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Heart } from 'lucide-react';
 import { 
   EnhancedField, 
   PasswordField, 
@@ -15,6 +14,8 @@ import {
   FieldGroup 
 } from '@/components/FormEnhancements';
 import { useKeyboardShortcuts, ShortcutAnnouncement } from '@/hooks/useKeyboardShortcuts';
+import Header from '@/components/Header';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const LoginPage: React.FC = () => {
     password: ''
   });
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [showPassword, setShowPassword] = useState(false);
   
   // Auto-focus ref for accessibility
   const firstFieldRef = useRef<HTMLInputElement>(null);
@@ -114,24 +116,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <header className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <img 
-            src="/lovable-uploads/81eef39a-e573-4fd1-9023-d796f35d9e41.png" 
-            alt=""
-            aria-hidden="true"
-            className="h-12"
-          />
-        </div>
-        <h1 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Please Log In to Continue
-        </h1>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Access your health and wellness benefits
-        </p>
-      </header>
-
+      <Header showNavLogin={false} isAuthenticated={false} />
       {/* Main Content */}
       <main className="mt-8 sm:mx-auto sm:w-full sm:max-w-md" id="main-content">
         <Card className="shadow-lg">
@@ -173,23 +158,32 @@ const LoginPage: React.FC = () => {
               </div>
 
               {/* Password Field */}
-              <div>
+              <div className="relative">
                 <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password <span className="text-red-500" aria-label="required">*</span>
                 </Label>
                 <Input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`mt-1 ${errors.password ? 'border-red-500' : ''}`}
+                  className={`mt-1 pr-10 ${errors.password ? 'border-red-500' : ''}`}
                   aria-describedby={errors.password ? 'password-error password-help' : 'password-help'}
                   aria-invalid={!!errors.password}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none flex items-center justify-center h-6 w-6"
+                  tabIndex={0}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+                </button>
                 <p id="password-help" className="mt-1 text-sm text-gray-500">
                   Password must be at least 8 characters long
                 </p>

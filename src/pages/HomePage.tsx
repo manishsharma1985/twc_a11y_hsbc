@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRequests } from '@/contexts/RequestContext';
 import { Calendar, Phone, User, Clock, ChevronRight, List, Mail, FileText, Heart } from 'lucide-react';
 import hsbc_logo from '../../public/hsbc_logo.svg'
+import Header from '@/components/Header';
 const services = [{
   id: 'health-check',
   title: 'Health Checks',
@@ -106,136 +107,12 @@ const HomePage: React.FC = () => {
     setTimeout(() => setScreenReaderAnnouncement(''), 1000);
   };
   return <div className="min-h-screen bg-gray-50">
-      {/* Skip to main content link for accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-white px-4 py-2 rounded-md z-50 focus:z-50">
-        Skip to main content
-      </a>
-
-      {/* Screen reader announcements */}
-      <div 
-        role="status" 
-        aria-live="polite" 
-        aria-label="Status updates"
-        className="sr-only"
-      >
-        {screenReaderAnnouncement}
-      </div>
-
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200" role="banner">
-        <div className="max-w-[1140px] mx-auto px-2 sm:px-6">
-          <div className="flex justify-between items-center h-16 sm:h-20">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/81eef39a-e573-4fd1-9023-d796f35d9e41.png" 
-                alt="The Wellness Corner - Corporate Health and Wellness Benefits Platform" 
-                className="h-10 cursor-pointer hover:opacity-80 transition-opacity focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded" 
-                onClick={() => navigate('/')} 
-                role="button" 
-                tabIndex={0} 
-                aria-label="Go to homepage"
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setScreenReaderAnnouncement('Navigating to homepage');
-                    navigate('/');
-                    setTimeout(() => setScreenReaderAnnouncement(''), 1000);
-                  }
-                }} 
-              />
-            </div>
-            
-            <nav className="flex items-center space-x-2 sm:space-x-6" role="navigation" aria-label="Main navigation">
-              {isAuthenticated ? <div className="flex items-center space-x-2 sm:space-x-6">
-                  {/* <img src="/lovable-uploads/6f5eb287-817a-4b58-b231-56d3e2983585.png" alt="Accenture company logo" className="h-6" /> */}
-                       {/* HSBC Logo: Only show when authenticated */}
-                <img
-                  src={hsbc_logo}
-                  alt="HSBC corporate logo"
-                  className="h-8 sm:h-10 ml-1 sm:ml-4"
-                />
-              
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => {
-                      setScreenReaderAnnouncement('Navigating to request history page');
-                      navigate('/history');
-                      setTimeout(() => setScreenReaderAnnouncement(''), 1000);
-                    }} 
-                    className="flex items-center text-gray-600 hover:text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 text-xs sm:text-sm"
-                    aria-label="View all your submitted requests"
-                  >
-                    <List className="h-4 w-4 mr-1 sm:mr-2" aria-hidden="true" />
-                    <span className="hidden xs:inline">View All</span>Requests
-                  </Button>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button 
-                        className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full" 
-                        aria-label={`User menu for ${user?.name || 'user'} - Click to open account options`}
-                        aria-expanded="false"
-                        aria-haspopup="true"
-                      >
-                        <Avatar className="h-10 w-10 cursor-pointer bg-primary/10 border-2 border-primary/20 hover:bg-primary/20 transition-colors">
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                            {user ? getUserInitials(user.name) : 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-64 p-3" 
-                      align="end"
-                      role="menu"
-                      aria-label="User account menu"
-                      onOpenAutoFocus={(event) => {
-                        // Focus the sign out button when popover opens
-                        event.preventDefault();
-                        const target = event.currentTarget as HTMLElement;
-                        const signOutButton = target.querySelector('button');
-                        if (signOutButton) {
-                          signOutButton.focus();
-                        }
-                      }}
-                    >
-                      <div className="space-y-3">
-                        <div role="group" aria-label="User information">
-                          <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                          <p className="text-xs text-gray-500 break-all">{user?.email}</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            setScreenReaderAnnouncement('Signing out and returning to login page');
-                            logout();
-                            setTimeout(() => setScreenReaderAnnouncement(''), 1000);
-                          }} 
-                          className="w-full text-sm focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                          role="menuitem"
-                          aria-label="Sign out of your account"
-                        >
-                          Sign Out
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div> :                   <Button 
-                    onClick={() => {
-                      setScreenReaderAnnouncement('Navigating to login page');
-                      navigate('/login');
-                      setTimeout(() => setScreenReaderAnnouncement(''), 1000);
-                    }} 
-                    className="bg-primary hover:bg-primary/90 text-white focus:ring-2 focus:ring-primary focus:ring-offset-2 min-h-[48px] px-4 py-3 text-base font-medium rounded-lg"
-                    aria-label="Log in to access your wellness benefits"
-                  >
-                    Login
-                  </Button>}
-            </nav>
-          </div>
-        </div>
-      </header>
-
+      <Header
+        user={user}
+        isAuthenticated={isAuthenticated}
+        logout={logout}
+        screenReaderAnnouncement={screenReaderAnnouncement}
+      />
       {/* Main Content */}
       <main id="main-content" className="max-w-[1140px] mx-auto px-2 sm:px-6 py-6 sm:py-12" role="main">
         {/* Hero Section */}

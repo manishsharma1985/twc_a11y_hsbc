@@ -15,6 +15,7 @@ import { Calendar, Clock, List } from 'lucide-react';
 import MediaUpload from '@/components/MediaUpload';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase, type HealthBenefitRequest } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 const services = [
   'Health Check',
@@ -207,54 +208,11 @@ const RequestFormPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/81eef39a-e573-4fd1-9023-d796f35d9e41.png" 
-                alt="The Wellness Corner - Corporate Health and Wellness Benefits Platform"
-                className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded" 
-                onClick={() => navigate('/')} 
-                role="button" 
-                tabIndex={0} 
-                aria-label="Go to homepage"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/');
-                  }
-                }}
-              />
-            </div>
-            <nav className="flex items-center space-x-6" role="navigation" aria-label="Main navigation">
-              <Link
-                to="/history"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-describedby="history-nav-description"
-              >
-                Request History
-              </Link>
-              <p id="history-nav-description" className="sr-only">
-                View your previous health benefit requests
-              </p>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="text-gray-600 hover:text-gray-900 border-gray-300 hover:border-gray-400 min-h-[40px]"
-                aria-describedby="logout-description"
-              >
-                Logout
-              </Button>
-              <p id="logout-description" className="sr-only">
-                Sign out of your account
-              </p>
-            </nav>
-          </div>
-        </div>
-      </header>
-
+      <Header
+        user={user}
+        isAuthenticated={isAuthenticated}
+        logout={logout}
+      />
       {/* Screen reader announcements */}
       <div 
         role="status" 
@@ -264,7 +222,6 @@ const RequestFormPage: React.FC = () => {
       >
         {screenReaderAnnouncement}
       </div>
-
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="main-content">
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -451,6 +408,7 @@ const RequestFormPage: React.FC = () => {
                     className="space-y-2"
                     aria-describedby="contactMethod-help"
                     required
+                    aria-required="true"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="phone" id="contact-phone" />

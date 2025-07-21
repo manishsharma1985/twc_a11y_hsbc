@@ -22,6 +22,7 @@ import {
   List
 } from 'lucide-react';
 import { getAllRequests, HealthBenefitRequest } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 const getStatusIcon = (status: HealthRequest['status']) => {
   switch (status) {
@@ -147,90 +148,14 @@ const RequestHistoryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Same as HomePage */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-[1140px] mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/81eef39a-e573-4fd1-9023-d796f35d9e41.png" 
-                alt="The Wellness Corner"
-                className="h-10 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => navigate('/')}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/');
-                  }
-                }}
-              />
-            </div>
-            
-            <nav className="flex items-center space-x-6">
-              {isAuthenticated ? (
-                <div className="flex items-center space-x-6">
-                  {/* <img 
-                    src="/lovable-uploads/6f5eb287-817a-4b58-b231-56d3e2983585.png" 
-                    alt="Accenture"
-                    className="h-6"
-                  /> */}
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => navigate('/history')}
-                    className="flex items-center text-gray-600 hover:text-primary"
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    View All Requests
-                  </Button>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button 
-                        className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full"
-                        aria-label="User menu"
-                      >
-                        <Avatar className="h-10 w-10 cursor-pointer bg-primary/10 border-2 border-primary/20 hover:bg-primary/20 transition-colors">
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                            {user ? getUserInitials(user.name) : 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64 p-3" align="end">
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                          <p className="text-xs text-gray-500 break-all">{user?.email}</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={logout}
-                          className="w-full text-sm"
-                        >
-                          Sign Out
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              ) : (
-                <Button 
-                  onClick={() => navigate('/login')}
-                  className="bg-primary hover:bg-primary/90 text-white"
-                >
-                  Login
-                </Button>
-              )}
-            </nav>
-          </div>
-        </div>
-      </header>
-
+      <Header
+        user={user}
+        isAuthenticated={isAuthenticated}
+        logout={logout}
+      />
       {/* Main Content */}
-      <main className="max-w-[1140px] mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <main id="main-content" className="max-w-[1140px] mx-auto px-6 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Your Previous Requests
@@ -242,7 +167,7 @@ const RequestHistoryPage: React.FC = () => {
           
           <Button 
             onClick={() => navigate('/request')}
-            className="flex items-center"
+            className="flex items-center w-full sm:w-auto mt-4 sm:mt-0"
             aria-label="Submit a new service request"
           >
             <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -285,8 +210,6 @@ const RequestHistoryPage: React.FC = () => {
                       <Badge 
                         className={`${getStatusColor(request.status)} transition-colors focus:outline-none`}
                         tabIndex={0}
-                        role="status"
-                        aria-label={`Request status: ${request.status === 'in-progress' ? 'In Progress - Your request is currently being reviewed and processed' : request.status === 'completed' ? 'Completed - Your request has been successfully fulfilled' : request.status === 'cancelled' ? 'Cancelled - This request has been cancelled' : 'Pending - Your request is waiting to be processed'}`}
                       >
                         {request.status.replace('-', ' ').toUpperCase()}
                       </Badge>

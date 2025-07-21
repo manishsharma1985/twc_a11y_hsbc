@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
+import Header from '@/components/Header';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -130,19 +131,7 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <header className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Heart className="h-12 w-12 text-primary" aria-hidden="true" />
-        </div>
-        <h1 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Join The Wellness Corner
-        </h1>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Create your account to access personalized health and wellness benefits
-        </p>
-      </header>
-
+      <Header showNavLogin={false} isAuthenticated={false} />
       {/* Main Content */}
       <main className="mt-8 sm:mx-auto sm:w-full sm:max-w-md" id="main-content">
         <Card className="shadow-lg">
