@@ -209,7 +209,6 @@ const RequestHistoryPage: React.FC = () => {
                       </div>
                       <Badge 
                         className={`${getStatusColor(request.status)} transition-colors focus:outline-none`}
-                        tabIndex={0}
                       >
                         {request.status.replace('-', ' ').toUpperCase()}
                       </Badge>
